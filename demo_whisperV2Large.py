@@ -101,7 +101,7 @@ iface = gr.Interface(
     fn=transcribe,
     inputs=gr.Audio(sources=["microphone", "upload"], type="filepath"),
     outputs="text",
-    title="PEFT LoRA + INT8 Whisper Large V2 Marathi",
+    title="PEFT LoRA + INT8 Whisper Large V2",
     description="Realtime demo for Marathi speech recognition using `PEFT-LoRA+INT8` fine-tuned Whisper Large V2 model.",
 )
 
