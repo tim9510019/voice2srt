@@ -8,7 +8,6 @@ from transformers import (
 )
 import time
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 model_name_or_path = "openai/whisper-large-v3"
 task = "automatic-speech-recognition"
 
