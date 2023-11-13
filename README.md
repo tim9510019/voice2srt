@@ -1,4 +1,4 @@
-# Whisper-V3-Large Multiple Language Voice to text @ 2023/11/04
+# Whisper-V3-Large Multiple Language Voice to text @ 2023/11/13
 
 ## Setup Guide:
 1. 安裝Anaconda
