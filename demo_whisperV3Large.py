@@ -2,45 +2,43 @@ import torch
 import os
 import gradio as gr
 from transformers import (
-    AutomaticSpeechRecognitionPipeline,
-    WhisperForConditionalGeneration,
-    WhisperTokenizer,
-    WhisperProcessor,
+    AutoModelForSpeechSeq2Seq,
+    AutoProcessor,
+    pipeline,
 )
-from peft import PeftModel, PeftConfig
 import time
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-model_name_or_path = "openai/whisper-large-v2"
-language = "chinese"
-language_abbr = "zh-TW"
-task = "transcribe"
-# dataset_name = "mozilla-foundation/common_voice_11_0"
-# prepareCPUCore = 8
-
-peft_model_id = "tim9510019/openai-whisper-large-v2-LORA"
+model_name_or_path = "openai/whisper-large-v3"
+task = "automatic-speech-recognition"
 
 chunkSec = 30
 srtFolder = "srtResult"
 
+device = "cuda:0" if torch.cuda.is_available() else "cpu"
+torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
 
-peft_config = PeftConfig.from_pretrained(peft_model_id)
-model = WhisperForConditionalGeneration.from_pretrained(
-    peft_config.base_model_name_or_path, load_in_8bit=True, device_map="auto"
+model = AutoModelForSpeechSeq2Seq.from_pretrained(
+    model_name_or_path,
+    torch_dtype=torch_dtype,
+    low_cpu_mem_usage=True,
+    use_safetensors=True,
 )
-model = PeftModel.from_pretrained(model, peft_model_id)
+model.to(device)
 
-tokenizer = WhisperTokenizer.from_pretrained(
-    peft_config.base_model_name_or_path, language=language, task=task
-)
-processor = WhisperProcessor.from_pretrained(
-    peft_config.base_model_name_or_path, language=language, task=task
-)
-feature_extractor = processor.feature_extractor
-forced_decoder_ids = processor.get_decoder_prompt_ids(language=language, task=task)
+processor = AutoProcessor.from_pretrained(model_name_or_path)
 
-pipe = AutomaticSpeechRecognitionPipeline(
-    model=model, tokenizer=tokenizer, feature_extractor=feature_extractor
+pipe = pipeline(
+    task,
+    model=model,
+    tokenizer=processor.tokenizer,
+    feature_extractor=processor.feature_extractor,
+    max_new_tokens=128,
+    chunk_length_s=20,
+    batch_size=16,
+    return_timestamps=True,
+    torch_dtype=torch_dtype,
+    device=device,
 )
 
 
@@ -87,9 +85,6 @@ def transcribe(audio):
     with torch.cuda.amp.autocast():
         scriptList = pipe(
             audio,
-            generate_kwargs={"forced_decoder_ids": forced_decoder_ids},
-            chunk_length_s=chunkSec,
-            return_timestamps=True,
         )["chunks"]
 
         convert2srt(scriptList)
@@ -101,8 +96,8 @@ iface = gr.Interface(
     fn=transcribe,
     inputs=gr.Audio(sources=["microphone", "upload"], type="filepath"),
     outputs="text",
-    title="PEFT LoRA + INT8 Whisper Large V2",
-    description="Realtime demo for Chinese speech recognition using `PEFT-LoRA+INT8` fine-tuned Whisper Large V2 model.",
+    title="INT16 Whisper Large V3",
+    description="Realtime demo for multiple language speech recognition using INT16 Whisper Large V3",
 )
 
 iface.launch(share=True)
