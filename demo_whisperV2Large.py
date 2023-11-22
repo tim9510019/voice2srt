@@ -53,7 +53,7 @@ def convert2srt(scriptList):
         if secRawTo == None:
             secRawTo = secRawFrom + chunkSec
 
-        content = script["text"]
+        content = script["text"].encode("utf-8").decode("utf-8")
 
         milliSecFrom = "%03d" % (int(secRawFrom * 1000) % 1000)
         milliSecTo = "%03d" % (int(secRawTo * 1000) % 1000)
