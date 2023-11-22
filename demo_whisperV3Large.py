@@ -77,7 +77,7 @@ def convert2srt(scriptList):
 
     with open(srtFilePath, "w+") as whd:
         for srt in srtList:
-            print(srt, file=whd)
+            print(srt.encode("utf-8"), file=whd)
 
 
 def transcribe(audio):
