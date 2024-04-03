@@ -58,8 +58,8 @@ def convert2srt(scriptList):
         secFrom = "%02d" % (int(secRawFrom) % 60)
         secTo = "%02d" % (int(secRawTo) % 60)
 
-        minuteFrom = "%02d" % (int(secRawFrom) // 60) % 60
-        minuteTo = "%02d" % (int(secRawTo) // 60) % 60
+        minuteFrom = "%02d" % ((int(secRawFrom) // 60) % 60)
+        minuteTo = "%02d" % ((int(secRawTo) // 60) % 60)
 
         hourFrom = "%02d" % (int(secRawFrom) // 3600)
         hourTo = "%02d" % (int(secRawFrom) // 3600)
